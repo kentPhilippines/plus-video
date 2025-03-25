@@ -1,0 +1,1 @@
+{"doc":" 视频业务对象 video\n\n @author Lion Li\n","fields":[{"name":"videoId","doc":" 视频ID\n"},{"name":"title","doc":" 视频标题\n"}],"enumConstants":[],"methods":[],"constructors":[]}
