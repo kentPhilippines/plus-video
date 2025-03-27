@@ -256,6 +256,30 @@ create table sys_menu (
     primary key (menu_id)
 ) engine=innodb comment = '菜单权限表';
 
+DROP TABLE IF EXISTS `t_video_item`;
+CREATE TABLE `t_video_item`  (
+                                 `row_id` int NOT NULL AUTO_INCREMENT,
+                                 `row_type` int NULL DEFAULT NULL COMMENT '2.大标题3.小标题',
+                                 `tenant_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '租户编号',
+                                 `item_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '视频编码',
+                                 `item_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '视频名称',
+                                 `enable` int NULL DEFAULT NULL COMMENT '0:禁用 1:启用',
+                                 `hot` int NULL DEFAULT NULL COMMENT '是否热门 0:不是 1:是',
+                                 `hot_order_id` int NULL DEFAULT NULL COMMENT '热门排序',
+                                 `recommend` int NULL DEFAULT NULL COMMENT '0否 1是 分类热门',
+                                 `order_id` int NULL DEFAULT NULL COMMENT '排序编号',
+                                 `recommend_order_id` int NULL DEFAULT 0 COMMENT '分类热门排序ID',
+                                 `site` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '站点(每个租户分配一个站点标识)',
+                                 `modify_by` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '修改人',
+                                 `last_modify_time` bigint NULL DEFAULT NULL COMMENT '最后修改时间',
+                                 `language_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '语言(zh,br)',
+                                 `icon` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL COMMENT '图标(后台上传)',
+                                 `video_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '视频地址',
+                                 PRIMARY KEY (`row_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 2043793 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin ROW_FORMAT = DYNAMIC;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
 -- ----------------------------
 -- 初始化-菜单信息表数据
 -- ----------------------------
@@ -282,7 +306,25 @@ insert into sys_menu values('115',  '代码生成',     '3',   '2', 'gen',      
 insert into sys_menu values('121',  '租户管理',     '6',   '1', 'tenant',           'system/tenant/index',          '', 1, 0, 'C', '0', '0', 'system:tenant:list',          'list',          103, 1, sysdate(), null, null, '租户管理菜单');
 insert into sys_menu values('122',  '租户套餐管理',  '6',   '2', 'tenantPackage',    'system/tenantPackage/index',   '', 1, 0, 'C', '0', '0', 'system:tenantPackage:list',   'form',          103, 1, sysdate(), null, null, '租户套餐管理菜单');
 insert into sys_menu values('123',  '客户端管理',   '1',   '11', 'client',           'system/client/index',          '', 1, 0, 'C', '0', '0', 'system:client:list',          'international', 103, 1, sysdate(), null, null, '客户端管理菜单');
+-- 菜单 SQL
+insert into sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark)
+values(1624, 'video', '1', '1', 'videoItem', 'system/videoItem/index', 1, 0, 'C', '0', '0', 'system:videoItem:list', '#', 103, 1, sysdate(), null, null, 'video菜单');
 
+-- 按钮 SQL
+insert into sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark)
+values(1625, 'video查询', 1624, '1',  '#', '', 1, 0, 'F', '0', '0', 'system:videoItem:query',        '#', 103, 1, sysdate(), null, null, '');
+
+insert into sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark)
+values(1626, 'video新增', 1624, '2',  '#', '', 1, 0, 'F', '0', '0', 'system:videoItem:add',          '#', 103, 1, sysdate(), null, null, '');
+
+insert into sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark)
+values(1627, 'video修改', 1624, '3',  '#', '', 1, 0, 'F', '0', '0', 'system:videoItem:edit',         '#', 103, 1, sysdate(), null, null, '');
+
+insert into sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark)
+values(1628, 'video删除', 1624, '4',  '#', '', 1, 0, 'F', '0', '0', 'system:videoItem:remove',       '#', 103, 1, sysdate(), null, null, '');
+
+insert into sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark)
+values(1629, 'video导出', 1624, '5',  '#', '', 1, 0, 'F', '0', '0', 'system:videoItem:export',       '#', 103, 1, sysdate(), null, null, '');
 -- springboot-admin监控
 insert into sys_menu values('117',  'Admin监控',   '2',   '5',  'Admin',            'monitor/admin/index',         '', 1, 0, 'C', '0', '0', 'monitor:admin:list',           'dashboard',     103, 1, sysdate(), null, null, 'Admin监控菜单');
 -- oss菜单
