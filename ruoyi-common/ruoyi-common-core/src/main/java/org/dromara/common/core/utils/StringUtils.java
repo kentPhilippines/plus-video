@@ -4,7 +4,11 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.StrUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
+import org.dromara.common.core.enums.BusinessStatusEnum;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.function.Function;
@@ -20,6 +24,15 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     public static final String SEPARATOR = ",";
 
     public static final String SLASH = "/";
+
+    public static final String TRACE_ID = "TraceId";
+    public static final String UUID = "uuid";
+
+    public static final String KEY_VERIFY_CODE = "verifyCode";
+
+    public static final int Y = 1;
+    public static final int N = 0;
+    private static final PhoneNumberUtil PHONE_NUMBER_UTIL = PhoneNumberUtil.getInstance();
 
     @Deprecated
     private StringUtils() {
@@ -339,4 +352,63 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         return false;
     }
 
+    public static boolean isValidUsername(String username) {
+        String forbiddenPattern = "[<>/\"'--;:.*?|$&#^@%(){}\\[\\]（）【】｛｝！¥€£§©®™±+=×÷‰∞∑√πµ·•…——‘’“”°℃℉~～、.。`\\u2070-\\u209F\\u2080-\\u2089]";
+        return !username.matches(".*" + forbiddenPattern + ".*");
+    }
+
+    /**
+     * 匹配手机号码
+     *
+     * @param areaCode 手机号码区域
+     * @param number   手机号码
+     */
+    public static void isMobileNumber(String areaCode, String number) {
+        Assert.isTrue(StrUtil.isAllNotBlank(areaCode, number), BusinessStatusEnum.INVALID_PHONE.getDesc());
+        Phonenumber.PhoneNumber phoneNumber = new Phonenumber.PhoneNumber();
+        phoneNumber.setCountryCode(Integer.valueOf(areaCode)).setNationalNumber(Long.valueOf(number));
+        Assert.isTrue(PHONE_NUMBER_UTIL.isValidNumber(phoneNumber), BusinessStatusEnum.INVALID_PHONE.getDesc());
+    }
+
+
+    /**
+     * 接口常用常量
+     */
+    public static final class HttpParamName {
+        public static final String CONTENT_TYPE = "Content-Type";
+        public static final String FORM = "application/x-www-form-urlencoded";
+        public static final String JSON = "application/json";
+        public static final String TEXT = "text/plain";
+        //        public static final String CONTENT_LENGTH = "Content-Length";
+        public static final String CONTENT_LENGTHS = "Content-Lengths";
+        public static final String FORM_DATA = "multipart/form-data";
+        public static final String AUTHORIZATION = "Authorization";
+        public static final String X_TOKEN = "X-Token";
+        public static final String X_OPERATOR = "X-Operator";
+        public static final String X_KEY = "X-Key";
+        public static final String X_AUTH_TOKEN = "X-Auth-Token";
+
+        public static final String ACCEPT = "Accept";
+        public static final String ACCEPT_ENCODING = "Accept-Encoding";
+        public static final String GZIP = "gzip";
+        public static final String USER_AGENT = "User-Agent";
+
+        public static final String Client_Ip = "client_ip";
+
+        public static final String Https_Str = "https://";
+    }
+
+    public interface Number {
+        int N0 = 0;
+        int N1 = 1;
+        int N2 = 2;
+        int N3 = 3;
+        int N4 = 4;
+        int N5 = 5;
+        int N6 = 6;
+        int N7 = 7;
+        int N8 = 8;
+        int N9 = 9;
+        int N10 = 10;
+    }
 }

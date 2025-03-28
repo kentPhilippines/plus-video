@@ -2,15 +2,17 @@ package org.dromara.common.redis.utils;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.dromara.common.core.domain.dto.LoginAndRegisterSettingDTO;
+import org.dromara.common.core.domain.dto.MemberCacheInfoDTO;
+import org.dromara.common.core.enums.BusinessStatusEnum;
 import org.dromara.common.core.utils.SpringUtils;
+import org.dromara.common.core.utils.StringUtils;
 import org.redisson.api.*;
 import org.redisson.api.options.KeysScanOptions;
+import org.springframework.util.Assert;
 
 import java.time.Duration;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -533,29 +535,31 @@ public class RedisUtils {
 
     /**
      * 获得缓存的基本对象列表(全局匹配忽略租户 自行拼接租户id)
-     * <P>
+     * <p>
      * limit-设置扫描的限制数量(默认为0,查询全部)
      * pattern-设置键的匹配模式(默认为null)
      * chunkSize-设置每次扫描的块大小(默认为0,本方法设置为1000)
      * type-设置键的类型(默认为null,查询全部类型)
      * </P>
-     * @see KeysScanOptions
+     *
      * @param pattern 字符串前缀
      * @return 对象列表
+     * @see KeysScanOptions
      */
     public static Collection<String> keys(final String pattern) {
-        return  keys(KeysScanOptions.defaults().pattern(pattern).chunkSize(1000));
+        return keys(KeysScanOptions.defaults().pattern(pattern).chunkSize(1000));
     }
 
     /**
      * 通过扫描参数获取缓存的基本对象列表
+     *
      * @param keysScanOptions 扫描参数
-     * <P>
-     * limit-设置扫描的限制数量(默认为0,查询全部)
-     * pattern-设置键的匹配模式(默认为null)
-     * chunkSize-设置每次扫描的块大小(默认为0)
-     * type-设置键的类型(默认为null,查询全部类型)
-     * </P>
+     *                        <p>
+     *                        limit-设置扫描的限制数量(默认为0,查询全部)
+     *                        pattern-设置键的匹配模式(默认为null)
+     *                        chunkSize-设置每次扫描的块大小(默认为0)
+     *                        type-设置键的类型(默认为null,查询全部类型)
+     *                        </P>
      * @see KeysScanOptions
      */
     public static Collection<String> keys(final KeysScanOptions keysScanOptions) {
@@ -580,5 +584,72 @@ public class RedisUtils {
     public static Boolean hasKey(String key) {
         RKeys rKeys = CLIENT.getKeys();
         return rKeys.countExists(key) > 0;
+    }
+
+    /**
+     * 系统登录注册设置
+     *
+     * @return 登录注册设置
+     */
+    public static LoginAndRegisterSettingDTO getLoginAndRegisterSetting(String siteId, RedissonClient redissonClient) {
+        RBucket<LoginAndRegisterSettingDTO> rBucket = getLoginAndRegisterSettingCache(siteId, redissonClient);
+        LoginAndRegisterSettingDTO loginAndRegisterSetting = rBucket.get();
+        if (Objects.isNull(loginAndRegisterSetting)) {
+            loginAndRegisterSetting = new LoginAndRegisterSettingDTO();
+            rBucket.set(loginAndRegisterSetting);
+        }
+        return loginAndRegisterSetting;
+    }
+
+    /**
+     * 系统登录注册设置
+     *
+     * @return 登录注册设置
+     */
+    public static RBucket<LoginAndRegisterSettingDTO> getLoginAndRegisterSettingCache(String site, RedissonClient redissonClient) {
+        return redissonClient.getBucket("LoginAndRegisterSetting:" + site);
+    }
+
+    /**
+     * 手机号码缓存的验证码
+     *
+     * @param redissonClient redis句柄
+     * @return 缓存的验证码
+     */
+    public static RBucket<String> verifyCodeCache(String mobile, RedissonClient redissonClient) {
+        return redissonClient.getBucket(StringUtils.KEY_VERIFY_CODE + ":" + mobile);
+    }
+
+    public static RBucket<String> getLoginAuthType(String traceId, RedissonClient redissonClient) {
+        RBucket<String> rBucket = redissonClient.getBucket("LoginAuthType:" + traceId);
+        rBucket.expire(Duration.ofDays(StringUtils.Y));
+        return rBucket;
+    }
+
+    /**
+     * 同IP注册限制
+     *
+     * @param ip                      会员姓名
+     * @param loginAndRegisterSetting 注册配置
+     * @param redissonClient          redis实例
+     */
+    public static void sameIpCheck(String ip, String site, LoginAndRegisterSettingDTO loginAndRegisterSetting, RedissonClient redissonClient) {
+        if (loginAndRegisterSetting.getRegisterIpLimit() > StringUtils.N) {
+            RAtomicLong rAtomicLong = redissonClient.getAtomicLong(String.format("SameIPFilter:%s:%s", site, ip));
+            long currentVal = rAtomicLong.get();
+            Assert.isTrue(currentVal + StringUtils.Y < loginAndRegisterSetting.getRegisterIpLimit(), BusinessStatusEnum.LIMIT_SAME_IP.getDesc());
+            rAtomicLong.incrementAndGet();
+        }
+    }
+
+    /**
+     * 会员 信息
+     *
+     * @param memberRowId    会员账号
+     * @param redissonClient 句柄
+     * @return 会员 信息
+     */
+    public static RBucket<MemberCacheInfoDTO> getMemberInfo(Long memberRowId, RedissonClient redissonClient) {
+        return redissonClient.getBucket("memebrInfo:" + memberRowId);
     }
 }

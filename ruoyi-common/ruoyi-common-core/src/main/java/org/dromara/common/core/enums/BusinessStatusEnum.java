@@ -20,7 +20,11 @@ import java.util.stream.Collectors;
 @Getter
 @AllArgsConstructor
 public enum BusinessStatusEnum {
-
+    CONTACT_US("C1", "请联系客服"),
+    ABNORMALITY_OF_ENTRY("C8", "入参异常"),
+    LIMIT_SAME_IP("me2", "注册限制,联系客服"),
+    INVALID_PHONE("C31", "无效手机号码"),
+    INVALID_VERIFICATION_CODE("au7", "无效验证码"),
     /**
      * 已撤销
      */
@@ -50,6 +54,10 @@ public enum BusinessStatusEnum {
      * 已退回
      */
     BACK("back", "已退回"),
+
+    E173("E173", "访问限制"),
+
+    E262("E262", "请勿使用带特殊字符作为账号名"),
 
     /**
      * 已终止
